@@ -68,8 +68,8 @@ static unsigned int arp_in_hook_func(void *priv,
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff) {
 			daddr = daddr & 0x0000ffff; // 0.0.x.y
-			daddr += 0x0a000000; // 10.0.x.y
-			daddr += team_id << 16; //10.team_id.x.y
+			daddr |= 0x0a000000; // 10.0.x.y
+			daddr |= team_id << 16; //10.team_id.x.y
 			csum_replace2(&iph->check, iph->daddr, htonl(daddr)); // rewrite checksum
 
 			// TCP Rewrite Checksum
@@ -92,8 +92,8 @@ static unsigned int arp_in_hook_func(void *priv,
 		// SADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (saddr >=  0xc0a80000 && saddr <= 0xc0a8ffff) {
 			saddr = saddr & 0x0000ffff; // 0.0.x.y
-			saddr += 0x0a000000; // 10.0.x.y
-			saddr += team_id << 16; //10.team_id.x.y
+			saddr |= 0x0a000000; // 10.0.x.y
+			saddr |= team_id << 16; //10.team_id.x.y
 			csum_replace2(&iph->check, iph->saddr, htonl(saddr));
 			// TCP, Calucate Checksum
 			if(iph->protocol == 0x6) {
@@ -173,7 +173,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		//printk(KERN_INFO "[Before IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 		if (daddr >= 0x0a000000 && daddr <= 0x0a0fffff && vlan_id < 2000) {
 			daddr = daddr & 0x0000ffff; // 0.0.x.y
-			daddr += 0xc0a80000; // 192.168.x.y
+			daddr |= 0xc0a80000; // 192.168.x.y
 			csum_replace2(&iph->check, iph->daddr, htonl(daddr));
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
@@ -190,7 +190,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		}
 		if (saddr >= 0x0a000000 && saddr <= 0x0a0fffff && vlan_id < 2000) {
 			saddr = saddr & 0x0000ffff; // 0.0.x.y
-			saddr += 0xc0a80000; // 192.168.x.y
+			saddr |= 0xc0a80000; // 192.168.x.y
 			csum_replace2(&iph->check, iph->saddr, htonl(saddr));
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
