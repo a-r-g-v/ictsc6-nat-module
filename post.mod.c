@@ -20,7 +20,6 @@ __attribute__((section("__versions"))) = {
 	{ 0xc6c01fa, __VMLINUX_SYMBOL_STR(module_layout) },
 	{ 0xb763b337, __VMLINUX_SYMBOL_STR(nf_unregister_hook) },
 	{ 0x994189fa, __VMLINUX_SYMBOL_STR(nf_register_hook) },
-	{ 0x27e1a049, __VMLINUX_SYMBOL_STR(printk) },
 	{ 0xbdfb6dbb, __VMLINUX_SYMBOL_STR(__fentry__) },
 };
 
@@ -30,4 +29,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "D2CA7A5EF95A86885CBA91D");
+MODULE_INFO(srcversion, "5C4A9C684AAB4296DF535A8");

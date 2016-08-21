@@ -62,10 +62,10 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		vlan_id = skb_vlan_tag_get_id(skb);
 		team_id = vlan_id / 100;
-		printk(KERN_INFO "[Before IP IN] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, vlan_id, team_id);
+		//printk(KERN_INFO "[Before IP IN] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, vlan_id, team_id);
 
 		bool flag = false;
-		printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
+		//printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
 		
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff) {
@@ -79,14 +79,14 @@ static unsigned int arp_in_hook_func(void *priv,
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
+				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} 
 			// UDP Rewrite Checksum
 			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
+				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
 			iph->daddr = htonl(daddr); 
 			flag = true;
@@ -104,13 +104,13 @@ static unsigned int arp_in_hook_func(void *priv,
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
-				printk(KERN_INFO "[After TCP SRC] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
+				//printk(KERN_INFO "[After TCP SRC] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			// UDP, Calucate Checksum
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
-				printk(KERN_INFO "[After UDP SRC] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
+				//printk(KERN_INFO "[After UDP SRC] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
 			iph->saddr = htonl(saddr);
 			flag = true;
@@ -122,7 +122,7 @@ static unsigned int arp_in_hook_func(void *priv,
 		}
 
 
-		printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
+		//printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 			return NF_ACCEPT;
 
 	}
@@ -141,7 +141,7 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		vlan_id = skb_vlan_tag_get_id(skb);
 		team_id = vlan_id / 100;
-		printk(KERN_INFO "[Before ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
+		//printk(KERN_INFO "[Before ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
 
 		if (!arpb->daddr || !arpb->saddr) {
 			return NF_ACCEPT;
@@ -158,7 +158,7 @@ static unsigned int arp_in_hook_func(void *priv,
 			skb->vlan_tci += 2015;
 		}
 
-		printk(KERN_INFO "[After ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
+		//printk(KERN_INFO "[After ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
 
 
 	}
@@ -186,7 +186,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		uint32_t daddr = ntohl(iph->daddr);
 		uint32_t saddr = ntohl(iph->saddr);
 
-		printk(KERN_INFO "[Before IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
+		//printk(KERN_INFO "[Before IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 		if (daddr >= 0x0a000000 && daddr <= 0x0a0fffff && vlan_id < 2000) {
 			daddr = daddr & 0x0000ffff; // 0.0.x.y
 			daddr += 0xc0a80000; // 192.168.x.y
@@ -195,12 +195,12 @@ static unsigned int arp_out_hook_func(void *priv,
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
+				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
+				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
 			iph->daddr = htonl(daddr);
 			flag = true;
@@ -214,12 +214,12 @@ static unsigned int arp_out_hook_func(void *priv,
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
+				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
-				printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
+				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
 			iph->saddr = htonl(saddr);
 			flag = true;
@@ -231,7 +231,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		if (vlan_id >= 2000) {
 			skb->vlan_tci -= 2000;
 		}
-		printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
+		//printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 
 
 	}
@@ -244,7 +244,7 @@ static unsigned int arp_out_hook_func(void *priv,
 
 		vlan_id = skb_vlan_tag_get_id(skb); // 2000
 		team_id = vlan_id / 100;
-		printk(KERN_INFO "[Before ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id);
+		//printk(KERN_INFO "[Before ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id);
 
 		if (!arpb->daddr || !arpb->saddr) {
 			return NF_ACCEPT;
@@ -265,7 +265,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		}
 
 
-		printk(KERN_INFO "[After ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d !!!vlan_id!!!: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id, skb_vlan_tag_get_id(skb));
+		//printk(KERN_INFO "[After ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d !!!vlan_id!!!: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id, skb_vlan_tag_get_id(skb));
 	}
 
 
