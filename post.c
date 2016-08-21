@@ -138,10 +138,8 @@ static unsigned int arp_in_hook_func(void *priv,
 		// if addr 192.168.0.0 ~ 192.168.255.255, rewrite 10.team_id.x.y
 		if (arpb->daddr[0] == 192 && arpb->daddr[1] == 168 &&
 				arpb->saddr[0] == 192 && arpb->saddr[1] == 168) {
-			arpb->daddr[0] = 10;
-			arpb->daddr[1] = team_id;
-			arpb->saddr[0] = 10;
-			arpb->saddr[1] = team_id;
+			arpb->daddr[0] = arpb->saddr[0] = 10;
+			arpb->daddr[1] = arpb->saddr[1] = team_id;
 			skb->vlan_tci += 2015;
 		}
 
@@ -236,10 +234,8 @@ static unsigned int arp_out_hook_func(void *priv,
 		// if addr 10.1.0.0 ~ 10.15.255.255, rewrite 192.168.x.y
 		else if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15  &&
 				arpb->saddr[0] == 10 && arpb->saddr[1] >= 0 && arpb->saddr[1] <= 15 ) {
-			arpb->daddr[0] = 192;
-			arpb->daddr[1] = 168;
-			arpb->saddr[0] = 192;
-			arpb->saddr[1] = 168;
+			arpb->daddr[0] = arpb->saddr[0] = 192;
+			arpb->daddr[1] = arpb->saddr[1] = 168;
 			skb->vlan_tci -= 15;
 		}
 
