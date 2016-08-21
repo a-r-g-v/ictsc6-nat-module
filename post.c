@@ -66,39 +66,46 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		bool flag = false;
 		printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
+		
+		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff) {
 			daddr = daddr & 0x0000ffff; // 0.0.x.y
 			daddr += 0x0a000000; // 10.0.x.y
 			daddr += team_id << 16; //10.team_id.x.y
-			csum_replace2(&iph->check, iph->daddr, htonl(daddr));
+			csum_replace2(&iph->check, iph->daddr, htonl(daddr)); // rewrite checksum
 
+			// TCP Rewrite Checksum
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
-			} else if (iph->protocol == 17) {
+			} 
+			// UDP Rewrite Checksum
+			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
-			iph->daddr = htonl(daddr);
+			iph->daddr = htonl(daddr); 
 			flag = true;
 
-			// TCP/UDP
 		}
 
+		// SADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (saddr >=  0xc0a80000 && saddr <= 0xc0a8ffff) {
 			saddr = saddr & 0x0000ffff; // 0.0.x.y
 			saddr += 0x0a000000; // 10.0.x.y
 			saddr += team_id << 16; //10.team_id.x.y
 			csum_replace2(&iph->check, iph->saddr, htonl(saddr));
+			// TCP, Calucate Checksum
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
 				printk(KERN_INFO "[After TCP SRC] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
+			// UDP, Calucate Checksum
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
 				uint32_t old_check = udph->check;
@@ -108,7 +115,6 @@ static unsigned int arp_in_hook_func(void *priv,
 			iph->saddr = htonl(saddr);
 			flag = true;
 
-			// TCP/UDP
 		}
 		if(flag){
 
@@ -152,45 +158,12 @@ static unsigned int arp_in_hook_func(void *priv,
 			skb->vlan_tci += 2015;
 		}
 
-		/*
-
-		   Aug 20 18:05:31 s7-1 kernel: [54096.800891] [Before ARP IN] daddr 10.0.0.3, saddr 10.0.0.10 in:br0 vlan_id: 0, team_id: 0 
-		   Aug 20 18:05:31 s7-1 kernel: [54096.800902] [After ARP IN] daddr 10.0.0.3, saddr 10.0.0.10 in:br0 vlan_id: 0, team_id: 0 
-		 **/
-
-		/*
-		   else if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15  &&
-		   arpb->saddr[0] == 10 && arpb->saddr[1] >= 0 && arpb->saddr[1] <= 15 ) {
-		   return NF_ACCEPT;
-		   arpb->daddr[0] = 192;
-		   arpb->daddr[1] = 168;
-		   arpb->saddr[0] = 192;
-		   arpb->saddr[1] = 168;
-		   skb->vlan_tci = skb->vlan_tci - 15 + 2000;
-		   }
-		 */
-
-
 		printk(KERN_INFO "[After ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
 
 
 	}
 	return NF_ACCEPT;
 }
-
-
-/*
-
-// if addr 10.1.0.0 ~ 10.15.255.255, rewrite 192.168.x.y
-if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 1 && arpb->daddr[1] <= 15  &&
-arpb->saddr[0] == 10 && arpb->saddr[1] >= 1 && arpb->saddr[1] <= 15 ) {
-arpb->daddr[0] = 192;
-arpb->daddr[1] = 168;
-arpb->saddr[0] = 192;
-arpb->saddr[1] = 168;
-skb->vlan_tci -= 15;
-} 
- */
 
 
 static unsigned int arp_out_hook_func(void *priv,
@@ -251,7 +224,6 @@ static unsigned int arp_out_hook_func(void *priv,
 			iph->saddr = htonl(saddr);
 			flag = true;
 
-			// TCP/UDP
 		}
 		if(flag) {
 			skb->vlan_tci -= 15;	
@@ -261,28 +233,6 @@ static unsigned int arp_out_hook_func(void *priv,
 		}
 		printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 
-
-
-/*
-		// TCP/UDP
-		if(iph->protocol == 0x6) {
-			struct tcphdr *tcph = tcp_hdr(skb);
-			csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
-		} else if (iph->protocol == 17) { 
-			struct udphdr *udph = udp_hdr(skb);
-			csum_replace2(&udph->check, iph->saddr, htonl(saddr));
-		}
-
-*/
-/*
-		if(iph->protocol == 0x6) {
-		struct tcphdr *tcph = tcp_hdr(skb);
-		tcph->check = 0;
-		} else if (iph->protocol == 17) { 
-		struct udphdr *udph = udp_hdr(skb);
-		udph->check = 0;
-		}
-*/
 
 	}
 	// ARP
@@ -337,18 +287,6 @@ static int __init nfe_init(void)
 	arp_out_nfho.pf = PF_BRIDGE;
 	nf_register_hook(&arp_out_nfho);
 
-	/*
-
-	   nfho.hook = hook_func;
-	   nfho.hooknum = NF_BR_PRE_ROUTING;
-	   nfho.pf = PF_BRIDGE;
-	   nfho.priority = NF_BR_PRI_BRNF;
-	   nf_register_hook(&nfho);
-	 */
-
-
-
-
 
 	return 0;
 }
@@ -357,7 +295,6 @@ static void __exit nfe_exit(void)
 {
 	nf_unregister_hook(&arp_in_nfho);
 	nf_unregister_hook(&arp_out_nfho);
-	//	nf_unregister_hook(&nfho);
 }
 module_init(nfe_init);
 module_exit(nfe_exit);
