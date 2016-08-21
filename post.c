@@ -228,11 +228,10 @@ static unsigned int arp_out_hook_func(void *priv,
 				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
+			}
 			iph->daddr = htonl(daddr);
 			flag = true;
 
-			// TCP/UDP
-			}
 		}
 		if (saddr >= 0x0a000000 && saddr <= 0x0a0fffff && vlan_id < 2000) {
 			saddr = saddr & 0x0000ffff; // 0.0.x.y
