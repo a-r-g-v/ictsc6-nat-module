@@ -53,7 +53,7 @@ static unsigned int arp_in_hook_func(void *priv,
 	if (ehdr->h_proto == 0x0008) {
 
 		struct iphdr *iph = ip_hdr(skb);
-		if (iph == NULL) {
+		if (iph == NULL || iph->daddr == NULL || iph->saddr == NULL) {
 			return NF_ACCEPT;
 		}
 
