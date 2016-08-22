@@ -77,14 +77,12 @@ static unsigned int arp_in_hook_func(void *priv,
 			// TCP Rewrite Checksum
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
-				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} 
 			// UDP Rewrite Checksum
 			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
@@ -102,13 +100,11 @@ static unsigned int arp_in_hook_func(void *priv,
 			// TCP, Calucate Checksum
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
-				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
 				//printk(KERN_INFO "[After TCP SRC] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			// UDP, Calucate Checksum
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
 				//printk(KERN_INFO "[After UDP SRC] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
@@ -189,12 +185,10 @@ static unsigned int arp_out_hook_func(void *priv,
 			csum_replace2(&iph->check, iph->daddr, htonl(daddr));
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
-				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
@@ -208,12 +202,10 @@ static unsigned int arp_out_hook_func(void *priv,
 			csum_replace2(&iph->check, iph->saddr, htonl(saddr));
 			if(iph->protocol == 0x6) {
 				struct tcphdr *tcph = tcp_hdr(skb);
-				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-				uint32_t old_check = udph->check;
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
