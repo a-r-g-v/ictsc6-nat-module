@@ -5,7 +5,7 @@
 #include <linux/skbuff.h>
 #include <linux/netfilter_bridge.h>
 #include <linux/skbuff.h>
-#include <linux/if_ether.h> 
+#include <linux/if_ether.h>
 #include <linux/if_vlan.h>
 #include <linux/if_arp.h>
 #include <linux/netfilter.h>
@@ -19,7 +19,7 @@
 #define DRIVER_DESC "sugoi"
 
 // bit masks
-#define VLAN_FLAG 0x800
+#define VLAN_ID_FLAG 0x800
 #define PRIVATE_A_NET 0x0a000000
 #define PRIVATE_C_NET 0xc0a80000
 #define PRIVATE_A_MASK 0xff000000
@@ -75,7 +75,7 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		bool flag = false;
 		//printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
-		
+
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr & PRIVATE_C_MASK ==  PRIVATE_C_NET) {
 			daddr = daddr & UNDER_MASK; // 0.0.x.y
@@ -89,7 +89,7 @@ static unsigned int arp_in_hook_func(void *priv,
 				uint32_t old_check = tcph->check;
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
-			} 
+			}
 			// UDP Rewrite Checksum
 			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
@@ -97,7 +97,7 @@ static unsigned int arp_in_hook_func(void *priv,
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
 			}
-			iph->daddr = htonl(daddr); 
+			iph->daddr = htonl(daddr);
 			flag = true;
 
 		}
@@ -126,8 +126,7 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		}
 		if(flag){
-
-			skb->vlan_tci += 2015;
+			skb->vlan_tci += 2063;  // 0x800 + 15
 		}
 
 
@@ -162,7 +161,7 @@ static unsigned int arp_in_hook_func(void *priv,
 				arpb->saddr[0] == 192 && arpb->saddr[1] == 168) {
 			arpb->daddr[0] = arpb->saddr[0] = 10;
 			arpb->daddr[1] = arpb->saddr[1] = team_id;
-			skb->vlan_tci += 2015;
+			skb->vlan_tci += 2063;  // 0x800 + 15
 		}
 
 		//printk(KERN_INFO "[After ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
@@ -233,11 +232,9 @@ static unsigned int arp_out_hook_func(void *priv,
 
 		}
 		if(flag) {
-			skb->vlan_tci -= 15;	
+			skb->vlan_tci -= 15;
 		}
-		if (vlan_id >= 2000) {
-			skb->vlan_tci -= 2000;
-		}
+		skb->vlan_tci &= !(VLAN_ID_FLAG);
 		//printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 
 
@@ -256,10 +253,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		if (!arpb->daddr || !arpb->saddr) {
 			return NF_ACCEPT;
 		}
-
-		if (vlan_id >= 2000) {
-			skb->vlan_tci -= 2000;
-		}
+		skb->vlan_tci &= !(VLAN_ID_FLAG);
 
 		// if addr 10.1.0.0 ~ 10.15.255.255, rewrite 192.168.x.y
 		else if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15  &&
