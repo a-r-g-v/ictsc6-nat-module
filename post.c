@@ -129,10 +129,6 @@ static unsigned int arp_in_hook_func(void *priv,
 			return NF_ACCEPT;
 		}
 
-		if (!state->in || !state->in->name ) {
-			return NF_ACCEPT;
-		}
-
 		vlan_id = skb_vlan_tag_get_id(skb);
 		team_id = vlan_id / 100;
 		//printk(KERN_INFO "[Before ARP IN] daddr %pI4, saddr %pI4 in:%s vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, state->in->name, vlan_id, team_id);
