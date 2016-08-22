@@ -234,7 +234,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		if(flag) {
 			skb->vlan_tci -= 15;
 		}
-		skb->vlan_tci &= ^(VLAN_ID_FLAG);
+		skb->vlan_tci &= ~(VLAN_ID_FLAG);
 		//printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
 
 
@@ -253,7 +253,7 @@ static unsigned int arp_out_hook_func(void *priv,
 		if (!arpb->daddr || !arpb->saddr) {
 			return NF_ACCEPT;
 		}
-		skb->vlan_tci &= ^(VLAN_ID_FLAG);
+		skb->vlan_tci &= ~(VLAN_ID_FLAG);
 
 		// if addr 10.1.0.0 ~ 10.15.255.255, rewrite 192.168.x.y
 		else if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15  &&
