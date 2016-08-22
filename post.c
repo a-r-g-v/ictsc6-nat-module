@@ -47,6 +47,8 @@ static unsigned int arp_in_hook_func(void *priv,
 		const struct nf_hook_state *state)
 {
 	struct ethhdr *ehdr = eth_hdr(skb);
+	int team_id;
+	unsigned int vlan_id;
 	// IP
 	if (ehdr->h_proto == 0x0008) {
 
@@ -57,8 +59,6 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		uint32_t daddr = ntohl(iph->daddr);
 		uint32_t saddr = ntohl(iph->saddr);
-		int team_id;
-		unsigned int vlan_id;
 
 		vlan_id = skb_vlan_tag_get_id(skb);
 		team_id = vlan_id / 100;
@@ -129,8 +129,6 @@ static unsigned int arp_in_hook_func(void *priv,
 	// ARP
 	else if (ehdr->h_proto == 0x0608) {
 		struct arpbdy *arpb = (struct arpbdy *)arp_hdr(skb);
-		unsigned int vlan_id;
-		int team_id;
 		if (!arpb){
 			return NF_ACCEPT;
 		}
