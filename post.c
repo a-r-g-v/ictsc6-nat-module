@@ -53,7 +53,7 @@ struct arpbdy {
 	unsigned char           daddr[4];              /* target IP address            */
 };
 
-static unsigned int arp_in_hook_func(void *priv,
+static unsigned int in_hook_func(void *priv,
 		struct sk_buff *skb,
 		const struct nf_hook_state *state)
 {
@@ -175,7 +175,7 @@ static unsigned int arp_in_hook_func(void *priv,
 }
 
 
-static unsigned int arp_out_hook_func(void *priv,
+static unsigned int out_hook_func(void *priv,
 		struct sk_buff *skb,
 		const struct nf_hook_state *state)
 {
@@ -280,13 +280,13 @@ static unsigned int arp_out_hook_func(void *priv,
 static int __init nfe_init(void)
 {
 
-	arp_in_nfho.hook = arp_in_hook_func;
+	arp_in_nfho.hook = in_hook_func;
 	arp_in_nfho.hooknum =NF_BR_PRE_ROUTING;
 	arp_in_nfho.pf = PF_BRIDGE;
 	nf_register_hook(&arp_in_nfho);
 
 
-	arp_out_nfho.hook = arp_out_hook_func;
+	arp_out_nfho.hook = out_hook_func;
 	arp_out_nfho.hooknum =NF_BR_FORWARD;
 	arp_out_nfho.pf = PF_BRIDGE;
 	nf_register_hook(&arp_out_nfho);
