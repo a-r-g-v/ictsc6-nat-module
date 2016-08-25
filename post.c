@@ -23,9 +23,9 @@
 #define VLAN_ID_FLAG 0x800
 #define PRIVATE_A_NET 0x0a000000
 #define PRIVATE_C_NET 0xc0a80000
-#define PRIVATE_A_MASK 0xff000000
-#define PRIVATE_B_MASK 0xffff0000
-#define PRIVATE_C_MASK 0xffffff00
+#define NETWORK_A_MASK 0xff000000
+#define NETWORK_B_MASK 0xffff0000
+#define NETWORK_C_MASK 0xffffff00
 #define UNDER_MASK 0x0000ffff
 #define OUTSIDE_MASK 0xffff0000  // 10.0.0.0/16 ~ 10.15.0.0/16
 
@@ -78,7 +78,7 @@ static unsigned int in_hook_func(void *priv,
 		//printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
 
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
-		if (daddr & PRIVATE_C_MASK ==  PRIVATE_C_NET) {
+		if (daddr & NETWORK_B_MASK ==  PRIVATE_C_NET) {
 			daddr = daddr & UNDER_MASK; // 0.0.x.y
 			daddr |= PRIVATE_A_NET; // 10.0.x.y
 			daddr |= team_id << 16; //10.team_id.x.y
@@ -94,7 +94,7 @@ static unsigned int in_hook_func(void *priv,
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			}
 			// UDP Rewrite Checksum
-			else if (iph->protocol == 17) {
+			else if (iph->protocol == 0x11) {
 				struct udphdr *udph = udp_hdr(skb);
         if(udph == NULL || udph->check == NULL) {
           return NF_ACCEPT;
@@ -108,7 +108,7 @@ static unsigned int in_hook_func(void *priv,
 		}
 
 		// SADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
-		if (saddr & PRIVATE_C_MASK ==  PRIVATE_C_NET) {
+		if (saddr & NETWORK_B_MASK ==  PRIVATE_C_NET) {
 			saddr = saddr & UNDER_MASK; // 0.0.x.y
 			saddr |= PRIVATE_A_NET; // 10.0.x.y
 			saddr |= team_id << 16; //10.team_id.x.y
@@ -122,7 +122,7 @@ static unsigned int in_hook_func(void *priv,
 				csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
 				//printk(KERN_INFO "[After TCP SRC] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			// UDP, Calucate Checksum
-			} else if (iph->protocol == 17) {
+			} else if (iph->protocol == 0x11) {
 				struct udphdr *udph = udp_hdr(skb);
         if(udph == NULL || udph->check == NULL) {
           return NF_ACCEPT;
@@ -196,7 +196,7 @@ static unsigned int out_hook_func(void *priv,
 		uint32_t saddr = ntohl(iph->saddr);
 
 		//printk(KERN_INFO "[Before IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
-		if (daddr & PRIVATE_A_MASK == PRIVATE_A_NET && !(vlan_id & VLAN_ID_FLAG)) {
+		if (daddr & NETWORK_A_MASK == PRIVATE_A_NET && !(vlan_id & VLAN_ID_FLAG)) {
 			daddr = daddr & UNDER_MASK; // 0.0.x.y
 			daddr |= PRIVATE_C_NET; // 192.168.x.y
 			csum_replace2(&iph->check, iph->daddr, htonl(daddr));
@@ -204,7 +204,7 @@ static unsigned int out_hook_func(void *priv,
 				struct tcphdr *tcph = tcp_hdr(skb);
 				csum_replace2(&tcph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
-			} else if (iph->protocol == 17) {
+			} else if (iph->protocol == 0x11) {
 				struct udphdr *udph = udp_hdr(skb);
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
 				//printk(KERN_INFO "[After UDP DEST] udp_check: %08x, old_check: %08x \n", udph->check, old_check);
@@ -213,7 +213,7 @@ static unsigned int out_hook_func(void *priv,
 			flag = true;
 
 		}
-		if (saddr & PRIVATE_A_MASK == PRIVATE_A_NET && !(vlan_id & VLAN_ID_FLAG)) {
+		if (saddr & NETWORK_A_MASK == PRIVATE_A_NET && !(vlan_id & VLAN_ID_FLAG)) {
 			saddr = saddr & UNDER_MASK; // 0.0.x.y
 			saddr |= PRIVATE_C_NET; // 192.168.x.y
 			csum_replace2(&iph->check, iph->saddr, htonl(saddr));
@@ -224,7 +224,7 @@ static unsigned int out_hook_func(void *priv,
         }
 				csum_replace2(&tcph->check, iph->saddr, htonl(saddr));
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
-			} else if (iph->protocol == 17) {
+			} else if (iph->protocol == 0x11) {
 				struct udphdr *udph = udp_hdr(skb);
         if (udph == NULL || udph->check == NULL ) {
           return NF_ACCEPT; 
