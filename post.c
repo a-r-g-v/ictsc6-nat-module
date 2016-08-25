@@ -165,7 +165,7 @@ static unsigned int in_hook_func(void *priv,
 			arpb->daddr[0] = arpb->saddr[0] = 10;
 			arpb->daddr[1] = arpb->saddr[1] = team_id;
 			skb->vlan_tci += VLAN_ID_FLAG | ADD_VLAN;
-`		}
+		}
 
 		//printk(KERN_INFO "[After ARP IN] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id);
 
@@ -211,7 +211,6 @@ static unsigned int out_hook_func(void *priv,
 			}
 			iph->daddr = htonl(daddr);
 			flag = true;
-
 		}
 		if (saddr & NETWORK_A_MASK == PRIVATE_A_NET && !(vlan_id & VLAN_ID_FLAG)) {
 			saddr = saddr & UNDER_MASK; // 0.0.x.y
@@ -234,15 +233,13 @@ static unsigned int out_hook_func(void *priv,
 			}
 			iph->saddr = htonl(saddr);
 			flag = true;
-
 		}
+
 		if(flag) {
 			skb->vlan_tci -= ADD_VLAN;	
 		}
 		skb->vlan_tci &= ~(VLAN_ID_FLAG);
 		//printk(KERN_INFO "[After IP OUT] daddr %pI4, saddr %pI4  vlan_id: %d, team_id: %d \n", &iph->daddr, &iph->saddr, skb_vlan_tag_get_id(skb), team_id);
-
-
 	}
 	// ARP
 	else if (ehdr->h_proto == 0x0608) {
@@ -267,8 +264,6 @@ static unsigned int out_hook_func(void *priv,
 			arpb->daddr[1] = arpb->saddr[1] = 168;
 			skb->vlan_tci -= ADD_VLAN;
 		}
-
-
 		//printk(KERN_INFO "[After ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d !!!vlan_id!!!: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id, skb_vlan_tag_get_id(skb));
 	}
 
