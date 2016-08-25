@@ -255,18 +255,19 @@ static unsigned int out_hook_func(void *priv,
 		if (!arpb->daddr || !arpb->saddr) {
 			return NF_ACCEPT;
 		}
-		skb->vlan_tci &= ~(VLAN_ID_FLAG);
 
+		if (skb->vlan_tci & VLAN_ID_FLAG){
+			skb->vlan_tci &= ~(VLAN_ID_FLAG);
+		}
 		// if addr 10.1.0.0 ~ 10.15.255.255, rewrite 192.168.x.y
 		else if (arpb->daddr[0] == 10 && arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15  &&
-				arpb->saddr[0] == 10 && arpb->saddr[1] >= 0 && arpb->saddr[1] <= 15 ) {
+				arpb->saddr[0] == 10 && arpb->saddr[1] >= 0 && arpb->saddr[1] <= 15) {
 			arpb->daddr[0] = arpb->saddr[0] = 192;
 			arpb->daddr[1] = arpb->saddr[1] = 168;
 			skb->vlan_tci -= ADD_VLAN;
 		}
 		//printk(KERN_INFO "[After ARP OUT] daddr %pI4, saddr %pI4 vlan_id: %d, team_id: %d !!!vlan_id!!!: %d \n", arpb->daddr, arpb->saddr, vlan_id, team_id, skb_vlan_tag_get_id(skb));
 	}
-
 
 	return NF_ACCEPT;
 }
