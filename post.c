@@ -87,7 +87,7 @@ static unsigned int arp_in_hook_func(void *priv,
 			// UDP Rewrite Checksum
 			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if(udph == NULL || udph->check == NULL) {
+                                if(udph == NULL) {
                                     return NF_ACCEPT;
                                   }
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
@@ -115,7 +115,7 @@ static unsigned int arp_in_hook_func(void *priv,
 			// UDP, Calucate Checksum
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if(udph == NULL || udph->check == NULL) {
+                                if(udph == NULL) {
                                   return NF_ACCEPT;
                                 }
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
@@ -218,7 +218,7 @@ static unsigned int arp_out_hook_func(void *priv,
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if (udph == NULL || udph->check == NULL ) {
+                                if (udph == NULL) {
                                     return NF_ACCEPT; 
                                 }
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
