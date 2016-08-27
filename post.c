@@ -67,6 +67,15 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		bool flag = false;
 		//printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
+                //
+		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff &&
+		    saddr >= 0x0a000000 && saddr <= 0x0a0fffff ) {
+                    return NF_DROP; 
+                }                                                                                         
+		if (saddr >=  0xc0a80000 && saddr <= 0xc0a8ffff &&
+		    daddr >= 0x0a000000 && daddr <= 0x0a0fffff ) {
+                    return NF_DROP; 
+                }                                                                                         
 		
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff) {
@@ -87,7 +96,7 @@ static unsigned int arp_in_hook_func(void *priv,
 			// UDP Rewrite Checksum
 			else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if(udph == NULL || udph->check == NULL) {
+                                if(udph == NULL) {
                                     return NF_ACCEPT;
                                   }
 				csum_replace2(&udph->check, iph->daddr, htonl(daddr));
@@ -115,7 +124,7 @@ static unsigned int arp_in_hook_func(void *priv,
 			// UDP, Calucate Checksum
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if(udph == NULL || udph->check == NULL) {
+                                if(udph == NULL) {
                                   return NF_ACCEPT;
                                 }
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
@@ -150,6 +159,15 @@ static unsigned int arp_in_hook_func(void *priv,
 			return NF_ACCEPT;
 		}
 
+		if (arpb->daddr[0] == 192 && arpb->daddr[1] == 168 &&
+				arpb->saddr[0] == 10 && (arpb->saddr[1] >= 0 && arpb->saddr[1] <= 15)) {
+                  return NF_DROP;
+		}
+
+		if (arpb->saddr[0] == 192 && arpb->saddr[1] == 168 &&
+				arpb->daddr[0] == 10 && (arpb->daddr[1] >= 0 && arpb->daddr[1] <= 15)) {
+                  return NF_DROP;
+		}
 
 		// if addr 192.168.0.0 ~ 192.168.255.255, rewrite 10.team_id.x.y
 		if (arpb->daddr[0] == 192 && arpb->daddr[1] == 168 &&
@@ -218,7 +236,7 @@ static unsigned int arp_out_hook_func(void *priv,
 				//printk(KERN_INFO "[After TCP DEST] tcp_check: %08x, old_check: %08x \n", tcph->check, old_check);
 			} else if (iph->protocol == 17) {
 				struct udphdr *udph = udp_hdr(skb);
-                                if (udph == NULL || udph->check == NULL ) {
+                                if (udph == NULL) {
                                     return NF_ACCEPT; 
                                 }
 				csum_replace2(&udph->check, iph->saddr, htonl(saddr));
