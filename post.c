@@ -67,6 +67,15 @@ static unsigned int arp_in_hook_func(void *priv,
 
 		bool flag = false;
 		//printk(KERN_INFO "daddr %x saddr %x \n",daddr, saddr );
+                //
+		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff &&
+		    saddr >= 0x0a000000 && saddr <= 0x0a0fffff ) {
+                    return NF_DROP; 
+                }                                                                                         
+		if (saddr >=  0xc0a80000 && saddr <= 0xc0a8ffff &&
+		    daddr >= 0x0a000000 && daddr <= 0x0a0fffff ) {
+                    return NF_DROP; 
+                }                                                                                         
 		
 		// DADDR: Incoming 192.168.0.0 ~ 192.168.255.255 , Rewrite 10.team_id.x.y
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff) {
