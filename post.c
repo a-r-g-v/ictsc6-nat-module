@@ -70,10 +70,13 @@ static unsigned int arp_in_hook_func(void *priv,
                 //
 		if (daddr >=  0xc0a80000 && daddr <= 0xc0a8ffff &&
 		    saddr >= 0x0a000000 && saddr <= 0x0a0fffff ) {
+                    
+		      //printk(KERN_INFO "DROP IP \n" );
                     return NF_DROP; 
                 }                                                                                         
 		if (saddr >=  0xc0a80000 && saddr <= 0xc0a8ffff &&
 		    daddr >= 0x0a000000 && daddr <= 0x0a0fffff ) {
+		     // printk(KERN_INFO "DROP IP \n" );
                     return NF_DROP; 
                 }                                                                                         
 		
